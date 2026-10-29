@@ -1,0 +1,28 @@
+{
+  "name": "madrazo-cartel-bot",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "bot": "node index.js",
+    "deploy-commands": "node deploy-commands.js",
+    "test": "node tests/bot-suite.test.js",
+    "lint": "tsc --noEmit",
+    "build": "node -e \"console.log('Madrazo Cartel Discord Bot: Ready')\""
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "better-sqlite3": "^13.0.3",
+    "discord.js": "^14.27.0",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "typescript": "^7.0.2"
+  }
+}

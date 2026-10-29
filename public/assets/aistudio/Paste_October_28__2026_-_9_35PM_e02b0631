@@ -1,0 +1,1157 @@
+# MADRAZO CARTEL — ULTIMATE DISCORD BOT
+## Master Engineering Prompt for Google AI Studio
+
+You are a senior Discord.js engineer, backend architect, database designer, and professional Discord UI/UX developer. Build a complete, production-oriented Discord bot for my fictional Madrazo Cartel roleplay community, supporting Roblox ER:LC and FiveM roleplay.
+
+Do not give me a tutorial, a mockup, pseudocode, or a partial example. Generate the actual working project, including all source files, configuration files, database schema, handlers, event listeners, documentation, and installation instructions.
+
+The bot must be modular, reliable, secure, easy to configure, and visually consistent. I want premium, high-fidelity Discord embeds comparable to professionally designed roleplay community bots.
+
+If the response limit prevents you from generating the whole project at once, divide the project into numbered parts. Maintain one consistent architecture across every part, track completed files, and continue until all required files are provided. Never replace required functionality with TODO comments, fake success messages, or nonfunctional placeholder handlers.
+
+---
+
+# 1. TECHNOLOGY STACK
+
+Use:
+
+- Node.js 20 or newer, preferably Node.js 22 LTS.
+- discord.js v14.
+- SQLite using better-sqlite3 for persistent data.
+- dotenv for environment configuration.
+- Native fetch or a suitable maintained HTTP library for external APIs.
+- A modular command, event, button, modal, select-menu, and service architecture.
+- Slash commands as the primary command interface.
+- Discord embeds, buttons, select menus, modals, private threads, and public/private ticket channels as appropriate.
+- Structured console logging with timestamps, severity levels, and stack traces.
+- Automated database migrations or versioned schema initialization.
+
+Use asynchronous Discord interactions correctly. Every interaction must receive an acknowledgement within Discord's deadline, with deferred replies where necessary.
+
+Do not expose bot tokens, API keys, private transcripts, application answers, or internal errors to unauthorized users.
+
+Use environment variables for secrets and server-specific IDs. Never hardcode my bot token into source files.
+
+Use stable, maintained package versions and provide a complete package.json.
+
+---
+
+# 2. PROJECT IDENTITY AND DESIGN
+
+Project name: Madrazo Cartel Bot
+
+Purpose: A professional management, moderation, ticketing, recruitment, verification, community, and roleplay operations bot.
+
+Visual style:
+- Dark charcoal backgrounds.
+- Black and dark crimson accents.
+- Deep red highlights.
+- White text and restrained gold details.
+- Professional, consistent embed layouts.
+- Custom Discord emoji support.
+- Configurable branding, embed colors, banners, footer text, and thumbnails.
+
+All embeds should support:
+
+1. An optional top banner image.
+2. A clear title with an appropriate emoji.
+3. A concise description.
+4. Organized fields.
+5. Useful timestamps.
+6. Author information when appropriate.
+7. A configurable footer and bot avatar.
+8. An optional bottom banner image.
+
+Discord embeds do not have a native independent bottom-banner field. Implement a bottom banner as a second embed containing the image, or as a separate message component when appropriate. Keep the main embed and banner visually grouped.
+
+Allow different top and bottom banner URLs for:
+- Welcome messages.
+- Verification panels.
+- Tickets.
+- Ticket transcripts.
+- Applications.
+- Moderation logs.
+- Giveaways.
+- Promotions.
+- Recruitment announcements.
+- Staff notifications.
+
+Create a reusable branding service so commands do not duplicate embed-building logic.
+
+Support normal Unicode emoji and custom emoji strings such as `<:name:123456789012345678>`.
+
+Never require an external image URL when no banner has been configured.
+
+---
+
+# 3. CONFIGURATION AND ROLE-BASED AUTHORIZATION
+
+Create `.env.example` and a central configuration system.
+
+Required environment variables:
+
+TOKEN=
+CLIENT_ID=
+GUILD_ID=
+OWNER_IDS=
+DEVELOPER_IDS=
+DATABASE_PATH=./data/madrazo.sqlite
+LOG_LEVEL=info
+TIMEZONE=America/Los_Angeles
+
+Add configurable IDs for:
+- Server owner and executive roles.
+- National command.
+- High command.
+- Low command.
+- Moderators.
+- Recruitment team.
+- Ticket support teams.
+- Application reviewers.
+- Verification role.
+- Unverified role.
+- Member role.
+- Giveaway manager.
+- Event manager.
+- Transcript audit role.
+- Bot log channel.
+- Error log channel.
+- Moderation log channel.
+- Join/leave log channel.
+- Verification channel.
+- Welcome channel.
+- Ticket panel channel.
+- Recruitment panel channel.
+- SSU panel channel.
+- Giveaway announcement channel.
+- Promotion log channel.
+- Punishment log channel.
+- Application log channel.
+
+All IDs must be editable without changing application logic.
+
+Support a configurable permission matrix. For example, `/ban` can require a configured moderation role, while `/ticket-setup` can require an executive role.
+
+Use Discord permissions and configured role IDs together. The bot must also check that its own highest role is above the target role before modifying roles.
+
+Do not allow users to grant themselves higher privileges by editing command arguments.
+
+Implement safe defaults: if a sensitive command has no configured authorized role, deny access and explain the configuration problem to the authorized administrator.
+
+Never allow ordinary members to execute owner-only commands.
+
+Provide `/config-check` to report missing configuration without revealing secrets.
+
+---
+
+# 4. DISCORD SERVER STRUCTURE
+
+Use the following existing channel names as configurable defaults. Do not create duplicate channels automatically unless explicitly requested by an authorized administrator.
+
+## Moderator Only
+- `moderator-only`
+
+## Information
+- `welcome-channel`
+- `📢│announcements`
+- `🚨│rideout-notify`
+- `⛓│chain-of-command`
+- `👑│filthy-few`
+- `🏆│movements`
+- `📜│documents`
+- `✅│rules`
+- `🔫│gun-rules`
+- `🔥│bylaws`
+- `💯│patches`
+- `🌎│territory`
+- `🟩│alliance-beef`
+
+## General
+- `🔴│general-chat`
+- `⚪│off-topic-chat`
+- `🤖│bot-commands`
+- `💡│suggestions`
+- `🔵│photos`
+- `⚫│clips`
+- `👥│advertisements`
+- `🌴│character-backstory`
+- `💵│inventory-updates`
+- `💻│inventory`
+
+## PK Logs
+- `🚫│punishments`
+- `🚫│pk-logs`
+- `🚫│outbad`
+
+## Church Room
+- `church-announcements`
+- `church-chat`
+- `church-transcripts`
+
+## Shotcallers
+- `🚨command-updates🚨`
+- `shotcaller-announcements`
+- `shotcaller-chat`
+- `⛔・gc-movements`
+- `command-documents`
+
+## Command Offices
+- `Command Waiting`
+- `🔑 Founder's Office`
+- `🔑 National Office`
+- `🔑 President's Office`
+- `🔑 VP's Office`
+- `🔑 SGT's Office`
+- `🔑 The Treasurery`
+- `🔑 Secretary's Office`
+- `🔑 Head Road Captain`
+- `🔑 Road Captain`
+
+## Public Voice Channels
+- `🌴 Public VC #1`
+- `🌴 Public VC #2`
+
+## Sinners (LA)
+- `🌴-announcements`
+- `🌴-sinners-chat`
+- `🌴-documents`
+- `🌴-inventory-updates`
+- `🌴-movements`
+- `🌴 Sinners Church`
+- `🌴 Sinners Lounge #1`
+- `🌴 Sinners Lounge #2`
+
+## Forgotten Ones (BC)
+- `🌴-announcements`
+- `🌴-forgotten-ones-chat`
+- `🌴-documents`
+- `🌴-inventory-updates`
+- `🌴-movements`
+- `🌴-table-transcripts`
+- `🌴 Forgotten Ones Church`
+- `🌴 Forgotten Ones Lounge #1`
+- `🌴 Forgotten Ones Lounge #2`
+
+## Bikes/Guns
+- `🌴-shotcallers-access`
+- `🌴-sinners-access`
+- `🌴-forgotten-ones-access`
+- `🌴-hangaround-access`
+
+## Table Member
+- `📢│table-announcements`
+- `💬│table-chat`
+
+## Requests
+- `📥│role-request`
+- `📥│roster-request`
+- `✌│loa-request`
+- `📥│ticket-selection`
+
+## Recruitment Team
+- `📣│recruitment-announcements`
+- `📣│training-announcements`
+- `📄│documents`
+- `📩│open-recruitment-logs`
+- `📂│recruitment-logs`
+- `📂│training-logs`
+- `training-request`
+- `Training Waiting Room`
+- `Training VC #1`
+- `Training VC #2`
+
+## High Command
+- `High Command Waiting`
+
+Implement `/channel-check` to identify missing configured channels. Use channel IDs in production configuration because channel names can be duplicated or changed.
+
+Do not assume that the bot can access private channels simply because they exist.
+
+---
+
+# 5. MADRAZO ROLE CONFIGURATION
+
+Use the following as configurable role-name defaults. The administrator must be able to map each role to an actual Discord role ID.
+
+Executive:
+- Owner
+- Co-Owner
+- FalconEye.GG
+- Cartel Owner
+- Cartel Co-Owner
+- Cartel Overseer
+
+National Command:
+- National President
+- National Vice President
+- President
+- Vice President
+- Head of Security
+- Secretary
+- Treasurer
+
+High Command:
+- Regional Boss
+- Regional Commander
+
+Low Command:
+- Deputy Commander
+- Squad Commander
+
+Membership:
+- Enforcer
+- Made Member
+- Prospect
+- Associate
+- Friend of the Cartel
+
+Divisions:
+- Forgotten Ones Chapter (BC)
+- First 5 Chapter (LA)
+- Sinners Chapter (LS)
+
+Patches:
+- Founding 9
+- The Dirty Dozen
+- Filthy Few
+- Head Shotcaller
+- Shotcallers
+- Psycho
+- Executioner
+- Sharpshooter
+- Danger Krew
+- Bloodthirsty
+- Expect No Mercy
+- 1%
+
+Specialty roles:
+- Bartender
+- Mechanic
+- Arms Dealer
+- CDL Certified
+- Logistics Specialist
+- Dealer
+- Manufacturer
+- Cartel Artist
+- Gunsmith
+- Hard Handed
+- Heavy Weapons Certified
+- Marksman Certified
+- Sniper Certified
+- Warehouse Manager
+- Pilot Certified
+- Medic Certified
+- Forklift Certified
+- Photographer
+- DJ
+- Sponsored
+- 1 Month Member
+- 3 Month Member
+- 6 Month Member
+- OG Member
+
+Staff and access:
+- Recruitment Team
+- Clock Manager
+- Founders Key
+- National Keys
+- President's Keys
+- Vice President's Keys
+- Security Chief Keys
+- Treasurer Keys
+- Secretary Keys
+- Regional Boss Keys
+- Senior Table Member
+- Table Member
+- Rideout Notify
+
+Do not automatically grant privileged roles based on names. Every role grant must be authorized and logged.
+
+---
+
+# 6. REQUIREMENT: AT LEAST 50 WORKING SLASH COMMANDS
+
+Create at least 50 distinct, functional slash commands. Group commands logically in Discord. Do not count command aliases as separate commands.
+
+## A. Moderation
+1. `/ban`
+2. `/unban`
+3. `/kick`
+4. `/timeout`
+5. `/untimeout`
+6. `/warn`
+7. `/warnings`
+8. `/clear-warnings`
+9. `/purge`
+10. `/lock`
+11. `/unlock`
+12. `/slowmode`
+13. `/nickname`
+14. `/modlog`
+15. `/case`
+
+Requirements:
+- Require a reason for punitive actions.
+- Store cases and warnings in SQLite.
+- Generate unique case IDs.
+- Record actor, target, reason, timestamp, duration, and action.
+- Log every action to the configured moderation channel.
+- Support case history and pagination.
+- Handle hierarchy and permission failures gracefully.
+- Never falsely claim an action succeeded.
+
+## B. Ticket System
+16. `/ticket-setup`
+17. `/ticket-panel`
+18. `/ticket-add`
+19. `/ticket-remove`
+20. `/ticket-claim`
+21. `/ticket-unclaim`
+22. `/ticket-close`
+23. `/ticket-reopen`
+24. `/ticket-transcript`
+25. `/ticket-stats`
+26. `/ticket-rename`
+27. `/ticket-priority`
+
+## C. Recruitment and Applications
+28. `/application-setup`
+29. `/application-panel`
+30. `/application-review`
+31. `/application-accept`
+32. `/application-deny`
+33. `/application-status`
+34. `/application-questions`
+35. `/recruitment-stats`
+
+## D. Verification and Community
+36. `/verification-setup`
+37. `/verification-stats`
+38. `/welcome-setup`
+39. `/member-info`
+40. `/server-info`
+41. `/avatar`
+42. `/userinfo`
+43. `/role-request`
+44. `/roster`
+45. `/suggestion-setup`
+
+## E. Giveaways and Events
+46. `/giveaway-create`
+47. `/giveaway-end`
+48. `/giveaway-reroll`
+49. `/giveaway-list`
+50. `/event-create`
+51. `/event-end`
+52. `/event-list`
+
+## F. Executive and Operations
+53. `/ssu-setup`
+54. `/ssu-start`
+55. `/ssu-shutdown`
+56. `/ssu-status`
+57. `/promotion`
+58. `/loa`
+59. `/announcement`
+60. `/embed-builder`
+61. `/config-check`
+62. `/channel-check`
+63. `/role-check`
+64. `/bot-stats`
+65. `/help`
+
+Every command must have a proper description, options, validation, permission checks, and useful output. If a command is not yet implemented, do not register it as functional.
+
+---
+
+# 7. PREMIUM TICKET SYSTEM
+
+Implement a professional ticket panel with an embed, top banner, bottom banner, and a select menu.
+
+Provide five configurable ticket categories:
+
+1. General Support
+2. High Rank Support
+3. Report a Member
+4. Ban Appeal
+5. Recruitment Support
+
+Allow each category to configure:
+- Display name and emoji.
+- Description.
+- Support role IDs to ping.
+- Staff access role IDs.
+- Category/channel ID for ticket creation.
+- Ticket opening message.
+- Top banner URL.
+- Bottom banner URL.
+- Transcript settings.
+- DM settings.
+- Optional ticket questions.
+
+The ticket selection panel should be a polished rich embed with a select menu.
+
+When a user selects a category:
+1. Validate the selection.
+2. Prevent duplicate open tickets when configured.
+3. Generate a unique ticket number.
+4. Create a ticket channel with a readable name such as `high-rank-support-5398`.
+5. Apply correct private channel permissions.
+6. Grant access to the ticket opener and the configured support roles.
+7. Ping only the configured support roles for that ticket type.
+8. Send the ticket opening embed with the top banner, instructions, and buttons.
+9. Include Claim, Close, Add Member, Remove Member, and Transcript actions as appropriate.
+10. Record the ticket in SQLite.
+11. Log the creation event.
+12. Send a success response with a real link to the ticket channel.
+
+The success message should resemble:
+
+“Successfully created your ticket — [Open Ticket]”
+
+Use a real Discord channel link generated from the channel ID. Never hardcode a fake URL.
+
+## Ticket naming and numbering
+- Use a persistent database counter or unique ticket ID.
+- Do not reuse ticket numbers after a restart.
+- Support concurrent ticket creation without duplicate numbers.
+- Store ticket opener, type, channel ID, ticket number, handler, creation time, and closure details.
+
+## Claiming
+- Allow only configured support roles to claim tickets.
+- Store the claimed-by user ID.
+- Prevent unauthorized claim/unclaim actions.
+- Log claims and releases.
+
+## Closing
+When a ticket closes:
+- Ask for an optional closure reason.
+- Record the closer and handler separately.
+- Record the opened and closed timestamps.
+- Calculate duration correctly.
+- Capture the conversation before deleting the channel.
+- Generate the transcript and save its URL.
+- Send the user a DM with a professional closure embed.
+- Send a copy or link to the configured audit channel.
+- Delete or archive the channel according to configuration.
+- Handle DM failures without undoing the closure.
+- Never claim a transcript was uploaded unless the upload actually succeeded.
+
+Example DM:
+
+Ticket #5398 — High Rank Support
+
+Your High Rank Support ticket has been closed.
+
+Handled By: @Handler
+Closed By: @Closer
+
+Opened: October 28, 2026 at 3:08 PM
+Closed: [actual closure time]
+Duration: 11m
+Messages Sent: 6 messages
+
+[View Online Transcript]
+
+Use real users, timestamps, durations, and message counts from stored data. Do not hardcode example names or dates.
+
+## Ticket transcript requirements
+- Support HTML transcripts with readable message formatting.
+- Include usernames, display names, message timestamps, edited markers, and attachment links.
+- Escape HTML to prevent injection.
+- Preserve messages in chronological order.
+- Paginate/fetch message history safely.
+- Include ticket metadata and closure information.
+- Handle deleted users, deleted attachments, embeds, and missing content gracefully.
+- Restrict access to private transcripts.
+- Store the transcript URL and generation status in SQLite.
+
+Integrate with Cookie API at https://www.cookie-api.com/ when its documented API supports the required upload operation.
+
+Do not invent Cookie API endpoints, authentication headers, or request bodies. Read the official API documentation and implement its actual interface. Put the API key in `COOKIE_API_KEY`. If the API cannot be accessed or its documentation is insufficient, implement a local HTML transcript generator and a configurable alternative upload provider. Clearly explain the fallback.
+
+An online transcript button must point to the real URL returned by the successful upload. Do not generate fake transcript links.
+
+---
+
+# 8. APPLICATION SYSTEM WITH THREADS AND MODALS
+
+Create an application panel with top and bottom banners, a clear description, and an Apply button.
+
+When the user clicks Apply:
+- Check whether they already have an active application.
+- Open a private thread in the configured application channel, if Discord permissions and channel type support it.
+- Name the thread using the application type and applicant.
+- Send the application instructions and questions.
+- Allow the applicant to respond through a modal or a guided question flow.
+- Save each answer immediately to SQLite.
+- Keep the application thread accessible to authorized reviewers.
+- Prevent unauthorized access to private application data.
+- Log the completed application.
+- Send the applicant a confirmation.
+- Notify the configured review team.
+
+If a modal cannot fit all questions, use multiple modals or a guided one-question-at-a-time interaction. Discord modals have component and text-input limits; never attempt to place an unlimited questionnaire in one modal.
+
+## Default Roblox / Cartel roleplay application
+Include editable questions such as:
+
+1. What is your Roblox username?
+2. What is your Discord username?
+3. What is your Roblox user ID, if available?
+4. How old is your roleplay character?
+5. What timezone are you in?
+6. Why do you want to join?
+7. What makes you a good fit for the organization?
+8. How active are you each week?
+9. What is your previous roleplay experience?
+10. Have you read and agreed to the server rules?
+11. Are you currently in another organization that conflicts with this application?
+12. Is there anything else the recruitment team should know?
+
+Do not collect unnecessary real-world sensitive information. Clearly distinguish character age from the applicant's real age.
+
+Make application questions editable through `/application-questions`.
+
+## Application review
+Reviewers can:
+- View the application.
+- Accept it.
+- Deny it with a reason.
+- Request more information.
+- Add internal reviewer notes.
+- View the application history.
+- Reopen a review if authorized.
+
+Log the reviewer, action, reason, and timestamp.
+
+DM the applicant with the actual outcome. If a DM fails, record that failure and notify staff.
+
+Generate a professional application result embed with configured banners and a transcript or application summary link where available.
+
+---
+
+# 9. WELCOME SYSTEM
+
+When a new member joins, send a polished welcome message using the configured welcome channel.
+
+Desired style:
+
+[Welcome banner]
+
+Welcome @Member to [Server Name]!
+
+Make sure to verify yourself in #verification-channel to access the server.
+
+[Bottom banner]
+
+Use the real member mention, configured server branding, and configured channel reference.
+
+Support custom emojis, including configurable emoji IDs.
+
+Requirements:
+- Show the member's avatar where appropriate.
+- Show the server icon or configured thumbnail.
+- Include a footer and timestamp.
+- Handle bots according to configuration.
+- Do not hardcode a particular member or server ID.
+
+If the verification channel is missing, fall back to a configured URL or omit the reference and log the configuration problem.
+
+---
+
+# 10. VERIFICATION AND MELONLY COMPATIBILITY
+
+I currently use Melonly verification. Build a compatibility layer rather than assuming undocumented Melonly endpoints exist.
+
+The bot should:
+- Welcome new members.
+- Show the configured verification instructions.
+- Track current guild member counts.
+- Display a live or periodically refreshed member-count panel.
+- Support an optional verification role and unverified role.
+- Log verification events if the integration provides them.
+- Provide a setup guide for configuring Melonly alongside this bot.
+
+Do not bypass Melonly's security, forge verification, or grant verified roles just because someone clicks a button unless the administrator explicitly configures that behavior.
+
+If Melonly does not expose a supported integration or event that the bot can consume, explain that limitation and use its existing Discord role assignment as the source of truth.
+
+## Member-count panel
+Display actual current guild membership and, if available, verified member counts.
+
+Example:
+
+Members: [live count]
+Verified Members: [count if measurable]
+Last Updated: [timestamp]
+
+Use a safe, non-overlapping update loop. Do not make a Discord API request every second.
+
+Persist the panel's channel ID and message ID so it survives restarts.
+
+---
+
+# 11. AUTO-UPDATING SSU PANEL
+
+Build an SSU (Server Start-Up) panel for roleplay sessions.
+
+Features:
+- `/ssu-setup`
+- `/ssu-start`
+- `/ssu-shutdown`
+- `/ssu-status`
+
+Display:
+- Current session state.
+- Session host.
+- Session start time.
+- Elapsed duration.
+- Player count, if connected to a real supported source.
+- Configured join instructions.
+- Buttons for relevant actions.
+- Optional notification role.
+
+Persist state in SQLite. Restore the panel after a restart.
+
+Do not invent player counts or claim to be connected to the Roblox or FiveM server without a real integration. If no external server API is configured, display the session state and indicate that player count is unavailable.
+
+The panel updater must use a recursive async loop or another non-overlapping scheduling method, with retries and backoff.
+
+---
+
+# 12. BUTTON-BASED GIVEAWAYS
+
+Implement durable giveaways with:
+- A polished embed.
+- Top and bottom banners.
+- Prize, host, duration, number of winners, and end time.
+- Enter and Leave buttons.
+- Unique entries per user.
+- Optional required role.
+- Optional minimum account or server membership age.
+- Optional bonus entries, configurable and auditable.
+- Persistent database records.
+- Automatic recovery after restart.
+- Giveaway ending and rerolling.
+- Winner announcements.
+- DM notifications where possible.
+- Audit logging.
+
+Use cryptographically secure randomness for winner selection when practical. Explain the selection method.
+
+Prevent duplicate entries with a database UNIQUE constraint. Prevent concurrent end/reroll operations from selecting inconsistent winners.
+
+Do not allow the host to falsely claim a winner was drawn if the operation failed.
+
+---
+
+# 13. ADVANCED MODERATION LOGGING
+
+Every moderation action should create:
+1. A database record.
+2. A professional moderation log embed.
+3. A unique case ID.
+4. An actor and target reference.
+5. A timestamp and reason.
+6. Relevant duration and evidence links.
+7. A success or failure result.
+
+Support audit logs for:
+- Ban and unban.
+- Kick.
+- Timeout and untimeout.
+- Warnings.
+- Message purge.
+- Role changes made by the bot.
+- Ticket claim, close, reopen, and membership changes.
+- Application submission and decisions.
+- Giveaway start, entry, end, and reroll.
+- SSU changes.
+- Configuration changes.
+- Bot startup and shutdown.
+
+Do not log bot tokens, API keys, passwords, or unnecessary private message content.
+
+Build a configurable forensic event log with access restrictions and retention controls. Do not claim to capture messages or actions that Discord does not expose to the bot.
+
+Include an error log channel and structured console logs.
+
+---
+
+# 14. EXECUTIVE BRANDING AND EMBED BUILDER
+
+Implement `/announcement` and `/embed-builder`.
+
+Support:
+- Title.
+- Description.
+- Fields.
+- Author.
+- Thumbnail.
+- Footer.
+- Timestamp.
+- Embed color.
+- Top banner.
+- Bottom banner.
+- Target channel.
+- Optional configured role ping.
+- Preview before sending.
+
+Require authorization to mention roles or publish in restricted channels.
+
+Sanitize and validate inputs. Respect Discord embed character limits. Provide clear errors when a payload exceeds limits.
+
+Create reusable embed templates for:
+- Announcements.
+- Ticket panels.
+- Ticket openings.
+- Ticket closures.
+- Applications.
+- Welcome messages.
+- Verification.
+- Moderation logs.
+- Giveaways.
+- Promotions.
+- SSU panels.
+- Suggestions.
+- Recruitment.
+- Staff reports.
+
+---
+
+# 15. PROFESSIONAL CONSOLE LOGGING
+
+Console logs should resemble a real production service:
+
+[2026-10-28 21:30:00] [INFO] Bot is starting
+[2026-10-28 21:30:01] [INFO] Database initialized
+[2026-10-28 21:30:02] [INFO] Loaded 65 slash commands
+[2026-10-28 21:30:03] [INFO] Connected to Discord
+[2026-10-28 21:30:04] [INFO] Guild configuration validated
+
+Implement:
+- INFO, WARN, ERROR, DEBUG levels.
+- Timestamps.
+- Command names and execution duration.
+- Error stack traces.
+- Database initialization logs.
+- API request failure logs.
+- Rate-limit warnings.
+- Startup summary.
+- Graceful shutdown.
+- Rotating file logs if implemented.
+- Redaction of sensitive data.
+
+Never print tokens, authorization headers, application secrets, or raw sensitive configuration.
+
+---
+
+# 16. 100 ROTATING BOT STATUSES
+
+Create a list of 100 distinct activity/status templates.
+
+Examples:
+- Watching over {members} members
+- Listening to ticket requests
+- Watching the recruitment queue
+- Managing community operations
+- Watching over the Madrazo community
+- Monitoring support tickets
+- Watching applications
+- Managing roleplay operations
+- Watching server activity
+- Supporting {members} members
+
+Requirements:
+- Include 100 unique entries.
+- Randomize the initial status and subsequent selection.
+- Avoid repeating the immediately previous status when possible.
+- Update at a conservative interval, such as every 60–180 seconds.
+- Persist the last status index if useful.
+- Use supported Discord activity types.
+- Rotate only among supported presence formats.
+- Use actual member counts for placeholders.
+- Do not promise live ticket counts if they are not queried from the database.
+- Handle failed presence updates without crashing.
+- Respect Discord rate limits.
+
+The list must be stored in a dedicated file such as `src/config/statuses.js`.
+
+---
+
+# 17. SUGGESTION SYSTEM
+
+Build a suggestion panel and `/suggestion-setup`.
+
+Features:
+- Submit a suggestion.
+- Send it to the configured suggestions channel.
+- Add approval and rejection buttons or reactions.
+- Allow configured reviewers to accept or deny.
+- Record the reviewer, outcome, reason, and timestamp.
+- Prevent duplicate processing.
+- Provide an audit trail.
+- Allow the author to view the status of their suggestion.
+
+Use professional embeds with configurable branding.
+
+---
+
+# 18. PROMOTION AND LEAVE-OF-ABSENCE SYSTEM
+
+Build `/promotion` and `/loa`.
+
+Promotions:
+- Target member.
+- Previous rank.
+- New rank.
+- Reason.
+- Approved by.
+- Optional announcement.
+- Optional role assignment when configured.
+- Promotion history.
+- Audit logging.
+
+LOA:
+- Member.
+- Start date.
+- End date.
+- Reason.
+- Approval status.
+- Approving staff member.
+- Automatic expiration checks.
+- Notifications before expiration if configured.
+
+Do not automatically grant powerful roles without an explicit configured authorization and role mapping.
+
+---
+
+# 19. DATABASE DESIGN
+
+Use SQLite with a well-defined schema, indexes, foreign keys where appropriate, and transactional writes.
+
+Include tables for:
+- schema_migrations
+- guild_settings
+- role_mappings
+- channel_mappings
+- moderation_cases
+- warnings
+- tickets
+- ticket_messages or transcript metadata
+- applications
+- application_answers
+- application_reviews
+- giveaways
+- giveaway_entries
+- giveaway_winners
+- suggestions
+- promotions
+- leaves_of_absence
+- sessions
+- audit_logs
+- status_state
+- counters
+
+Use parameterized SQL statements. Never build SQL queries by concatenating untrusted user input.
+
+Ensure ticket counters and giveaway operations are safe against concurrent interactions.
+
+Provide backup and restore documentation. Do not silently delete records during migrations.
+
+---
+
+# 20. ERROR HANDLING AND RELIABILITY
+
+Implement:
+- Centralized error handling.
+- `unhandledRejection` and `uncaughtException` reporting.
+- Graceful shutdown on SIGINT and SIGTERM.
+- Discord API rate-limit handling.
+- Retry logic with exponential backoff for retryable external requests.
+- Request timeouts.
+- Input validation.
+- Database transaction handling.
+- Duplicate-interaction prevention.
+- Persistent component IDs and recovery after restarts.
+- Cooldowns for abuse-prone commands.
+- Safe handling of deleted channels and roles.
+- Permission checks before every sensitive operation.
+
+Do not automatically restart forever on fatal configuration errors. Print an actionable error and exit cleanly when startup cannot proceed safely.
+
+Never catch an error and silently pretend the operation succeeded.
+
+---
+
+# 21. REQUIRED PROJECT STRUCTURE
+
+Generate a clean project structure similar to:
+
+madrazo-cartel-bot/
+├── package.json
+├── package-lock.json (if generated)
+├── .env.example
+├── .gitignore
+├── README.md
+├── index.js
+├── deploy-commands.js
+├── config/
+│   ├── defaults.js
+│   ├── roles.js
+│   ├── channels.js
+│   ├── tickets.js
+│   ├── applications.js
+│   ├── branding.js
+│   └── statuses.js
+├── database/
+│   ├── index.js
+│   ├── schema.js
+│   ├── migrations/
+│   └── repositories/
+├── src/
+│   ├── commands/
+│   │   ├── moderation/
+│   │   ├── tickets/
+│   │   ├── applications/
+│   │   ├── verification/
+│   │   ├── giveaways/
+│   │   ├── events/
+│   │   ├── executive/
+│   │   ├── suggestions/
+│   │   └── utility/
+│   ├── events/
+│   │   ├── ready.js
+│   │   ├── interactionCreate.js
+│   │   ├── guildMemberAdd.js
+│   │   ├── guildMemberRemove.js
+│   │   └── messageCreate.js
+│   ├── interactions/
+│   │   ├── buttons/
+│   │   ├── modals/
+│   │   └── selectMenus/
+│   ├── services/
+│   │   ├── moderationService.js
+│   │   ├── ticketService.js
+│   │   ├── transcriptService.js
+│   │   ├── cookieApiService.js
+│   │   ├── applicationService.js
+│   │   ├── giveawayService.js
+│   │   ├── verificationService.js
+│   │   ├── ssuService.js
+│   │   ├── presenceService.js
+│   │   ├── auditService.js
+│   │   └── brandingService.js
+│   ├── utils/
+│   │   ├── logger.js
+│   │   ├── permissions.js
+│   │   ├── validation.js
+│   │   ├── embeds.js
+│   │   ├── cooldowns.js
+│   │   └── time.js
+│   └── jobs/
+│       ├── giveawayScheduler.js
+│       ├── loaScheduler.js
+│       ├── presenceScheduler.js
+│       ├── memberCountScheduler.js
+│       └── ssuScheduler.js
+├── assets/
+│   └── README.md
+├── data/
+│   └── .gitkeep
+└── tests/
+    ├── permissions.test.js
+    ├── ticketCounter.test.js
+    ├── giveaway.test.js
+    └── validation.test.js
+
+You may improve the structure when necessary, but keep it modular and consistent.
+
+Every imported file must exist. Every registered command must have a real handler. All relative paths must be correct.
+
+Do not put the entire bot into one giant index.js file.
+
+---
+
+# 22. INSTALLATION AND DOCUMENTATION
+
+Generate a complete README covering:
+
+1. Required Node.js version.
+2. Installing dependencies.
+3. Creating a Discord application and bot.
+4. Inviting the bot with correct scopes and minimum permissions.
+5. Enabling required privileged gateway intents where necessary.
+6. Creating `.env` from `.env.example`.
+7. Configuring role IDs and channel IDs.
+8. Setting top and bottom banner URLs.
+9. Configuring the Cookie API key and documented endpoint.
+10. Configuring Melonly verification.
+11. Initializing the database.
+12. Deploying slash commands.
+13. Starting the bot.
+14. Updating the bot.
+15. Backing up the database.
+16. Troubleshooting common errors.
+17. Testing commands safely in a development server.
+
+Use Windows Command Prompt commands where possible:
+
+```bat
+npm install
+copy .env.example .env
+node deploy-commands.js
+node index.js
+```
+
+Explain that the `.env` file must be edited before startup.
+
+Do not ask me to put my token in a public GitHub repository or paste it into chat.
+
+---
+
+# 23. TESTING AND ACCEPTANCE CRITERIA
+
+Before considering the project complete, verify:
+
+- All JavaScript files have valid syntax.
+- All imports point to existing files.
+- All 65 listed commands are implemented or clearly documented as not yet delivered; do not claim completion if missing.
+- Slash commands deploy successfully.
+- Unauthorized users cannot execute protected commands.
+- Ticket creation generates unique ticket numbers.
+- Ticket channels have correct permissions.
+- Ticket claims and closures are persistent.
+- Transcript URLs are only shown after successful upload.
+- Applications persist across restarts.
+- Review actions are logged.
+- Giveaways survive restarts and prevent duplicate entries.
+- SSU panels survive restarts.
+- Member-count updates do not overlap.
+- Status rotation works without excessive API requests.
+- Database writes are parameterized.
+- Secrets are redacted from logs.
+- Failed Discord API calls do not produce false success responses.
+- The README matches the generated code.
+
+Provide a final file inventory and a command list with each command's permissions and functionality.
+
+---
+
+# 24. OUTPUT INSTRUCTIONS
+
+Start by presenting:
+1. A concise architecture overview.
+2. The complete file tree.
+3. The dependency list.
+
+Then generate the actual files, grouped by their exact paths. Provide full file contents, not snippets that require me to guess the missing parts.
+
+If you have access to a workspace capable of creating project files, create the files directly and package the complete project. Otherwise, output the source in manageable, clearly numbered batches.
+
+When the first batch ends, list the remaining files and continue from the next missing file in the next response.
+
+Do not claim the bot has been tested unless you actually run the tests. Clearly distinguish implemented features from features requiring external API credentials or a Discord test server.
+
+The goal is a polished, fully modular Madrazo Cartel Discord bot with 50+ functional slash commands, premium embeds, persistent tickets, five ticket categories, Cookie API transcript integration, thread-based applications, verification compatibility, giveaways, moderation, SSU panels, audit logging, and 100 rotating statuses.

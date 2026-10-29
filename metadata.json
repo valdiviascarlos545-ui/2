@@ -1,0 +1,6 @@
+{
+  "name": "Madrazo Cartel Discord Bot",
+  "description": "Standalone production Discord bot for Madrazo Cartel roleplay with ticket claiming, persistent panels, application reviews, giveaways, and 65 slash commands.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
